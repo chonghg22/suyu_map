@@ -2,26 +2,40 @@ import 'package:go_router/go_router.dart';
 import 'package:suyu_map/features/detail/detail_screen.dart';
 import 'package:suyu_map/features/favorite/favorite_screen.dart';
 import 'package:suyu_map/features/map/map_screen.dart';
+import 'package:suyu_map/features/mypage/mypage_screen.dart';
+import 'package:suyu_map/shared/widgets/main_shell.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',
   routes: [
-    GoRoute(
-      path: '/',
-      name: 'map',
-      builder: (context, state) => const MapScreen(),
+    // 탭바가 있는 ShellRoute
+    ShellRoute(
+      builder: (context, state, child) => MainShell(child: child),
+      routes: [
+        GoRoute(
+          path: '/',
+          name: 'map',
+          builder: (context, state) => const MapScreen(),
+        ),
+        GoRoute(
+          path: '/favorites',
+          name: 'favorites',
+          builder: (context, state) => const FavoriteScreen(),
+        ),
+        GoRoute(
+          path: '/mypage',
+          name: 'mypage',
+          builder: (context, state) => const MypageScreen(),
+        ),
+      ],
     ),
+    // 탭바 없는 독립 화면
     GoRoute(
       path: '/detail/:id',
       name: 'detail',
       builder: (context, state) => DetailScreen(
         id: state.pathParameters['id']!,
       ),
-    ),
-    GoRoute(
-      path: '/favorites',
-      name: 'favorites',
-      builder: (context, state) => const FavoriteScreen(),
     ),
   ],
 );
