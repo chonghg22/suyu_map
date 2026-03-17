@@ -1,5 +1,5 @@
-name: suyu_map
-description: "맘마존 - 수유실 찾기 앱"
+name: mammazone
+description: "전국 수유실 지도 앱 맘마존"
 publish_to: 'none'
 
 version: 1.0.0+1

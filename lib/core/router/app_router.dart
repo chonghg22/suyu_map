@@ -1,9 +1,9 @@
 import 'package:go_router/go_router.dart';
-import 'package:suyu_map/features/detail/detail_screen.dart';
-import 'package:suyu_map/features/favorite/favorite_screen.dart';
-import 'package:suyu_map/features/map/map_screen.dart';
-import 'package:suyu_map/features/mypage/mypage_screen.dart';
-import 'package:suyu_map/shared/widgets/main_shell.dart';
+import 'package:mammazone/features/detail/detail_screen.dart';
+import 'package:mammazone/features/favorite/favorite_screen.dart';
+import 'package:mammazone/features/map/map_screen.dart';
+import 'package:mammazone/features/mypage/mypage_screen.dart';
+import 'package:mammazone/shared/widgets/main_shell.dart';
 
 final appRouter = GoRouter(
   initialLocation: '/',

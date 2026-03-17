@@ -236,7 +236,7 @@ class _MapScreenState extends State<MapScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('수유맵')),
+      appBar: AppBar(title: const Text('맘마존')),
       body: Stack(
         children: [
           if (!_isInitialLoading)
