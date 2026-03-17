@@ -16,9 +16,9 @@ Future<void> main() async {
   );
 
   // Initialize Naver Map SDK
-  await NaverMapSdk.instance.initialize(
-    clientId: 'NAVER_MAP_CLIENT_ID',
-    onAuthFailed: (error) => debugPrint('네이버 지도 인증 실패: $error'),
+  await FlutterNaverMap().init(
+    clientId: 'kd0xoybpq4',
+    onAuthFailed: (ex) => debugPrint('네이버 지도 인증 실패: ${ex.message}'),
   );
 
   runApp(const ProviderScope(child: SuyuMapApp()));
