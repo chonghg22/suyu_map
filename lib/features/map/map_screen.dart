@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:go_router/go_router.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/constants/supabase_constants.dart';
@@ -111,13 +112,15 @@ class _MapScreenState extends State<MapScreen> {
         final avgTotal = (room['avg_total'] as num?)?.toDouble() ?? 0.0;
         final reviewCount = (room['review_count'] as num?)?.toInt() ?? 0;
 
+        final roomId = room['id'].toString();
         final marker = NMarker(
-          id: room['id'].toString(),
+          id: roomId,
           position: NLatLng(roomLat, roomLng),
         );
 
         marker.setOnTapListener((_) {
           _showBottomSheet(
+            id: roomId,
             name: name,
             address: address,
             floorInfo: floorInfo,
@@ -137,6 +140,7 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   void _showBottomSheet({
+    required String id,
     required String name,
     required String address,
     required String floorInfo,
@@ -153,7 +157,7 @@ class _MapScreenState extends State<MapScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
-      builder: (_) => Padding(
+      builder: (ctx) => Padding(
         padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -211,6 +215,18 @@ class _MapScreenState extends State<MapScreen> {
                 ],
               ),
             ],
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  context.push('/detail/$id');
+                },
+                icon: const Icon(Icons.info_outline, size: 18),
+                label: const Text('상세보기'),
+              ),
+            ),
           ],
         ),
       ),
