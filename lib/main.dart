@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -15,14 +14,7 @@ Future<void> main() async {
     anonKey: 'SUPABASE_ANON_KEY',
   );
 
-  // Initialize Naver Map SDK
-  await NaverMapSdk.instance.initialize(
-    clientId: 'NAVER_MAP_CLIENT_ID',
-    onAuthFailed: (error) {
-      debugPrint('네이버 지도 인증 실패: $error');
-    },
-  );
-
+  // 네이버 지도 인증은 AndroidManifest.xml의 meta-data로 처리
   runApp(const ProviderScope(child: SuyuMapApp()));
 }
 
