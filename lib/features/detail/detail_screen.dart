@@ -25,16 +25,37 @@ class _DetailScreenState extends State<DetailScreen> {
 
   Future<void> _loadDetail() async {
     try {
-      final response = await Supabase.instance.client
-          .schema(SupabaseConstants.schema)
-          .from(SupabaseConstants.nursingRoomRatingView)
+      final client = Supabase.instance.client.schema(SupabaseConstants.schema);
+
+      // nursing_room 테이블 조회
+      final room = await client
+          .from(SupabaseConstants.nursingRoomTable)
           .select()
           .eq('id', widget.id)
           .maybeSingle();
 
+      if (room == null) {
+        if (mounted) setState(() => _isLoading = false);
+        return;
+      }
+
+      // nursing_room_rating 뷰 별도 조회 (nursing_room_id 기준)
+      final rating = await client
+          .from(SupabaseConstants.nursingRoomRatingView)
+          .select()
+          .eq('nursing_room_id', widget.id)
+          .maybeSingle();
+
       if (mounted) {
         setState(() {
-          _room = response;
+          _room = {
+            ...room,
+            'avg_total': rating?['avg_total'],
+            'avg_cleanliness': rating?['avg_cleanliness'],
+            'avg_facility': rating?['avg_facility'],
+            'avg_accessibility': rating?['avg_accessibility'],
+            'review_count': rating?['review_count'],
+          };
           _isLoading = false;
         });
       }
