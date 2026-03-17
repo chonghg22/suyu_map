@@ -17,7 +17,7 @@ Future<void> main() async {
 
   // Initialize Naver Map SDK
   await NaverMapSdk.instance.initialize(
-    clientId: 'kd0xoybpq4',
+    clientId: 'NAVER_MAP_CLIENT_ID',
     onAuthFailed: (error) {
       debugPrint('네이버 지도 인증 실패: $error');
     },
