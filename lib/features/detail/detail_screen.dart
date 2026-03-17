@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/constants/supabase_constants.dart';
 import '../../data/repositories/favorite_repository.dart';
@@ -94,6 +95,30 @@ class _DetailScreenState extends State<DetailScreen> {
       debugPrint('즐겨찾기 오류: $e');
     } finally {
       if (mounted) setState(() => _isFavoriteLoading = false);
+    }
+  }
+
+  Future<void> _launchNaverMap(double lat, double lng, String name) async {
+    final encodedName = Uri.encodeComponent(name);
+    final appUri = Uri.parse(
+      'nmap://place?lat=$lat&lng=$lng&name=$encodedName&appname=kr.co.chonghg22.suyumap',
+    );
+    final webUri = Uri.parse(
+      'https://map.naver.com/v5/search/$encodedName',
+    );
+    if (!await launchUrl(appUri, mode: LaunchMode.externalApplication)) {
+      await launchUrl(webUri, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  Future<void> _launchKakaoMap(double lat, double lng, String name) async {
+    final encodedName = Uri.encodeComponent(name);
+    final appUri = Uri.parse('kakaomap://look?p=$lat,$lng');
+    final webUri = Uri.parse(
+      'https://map.kakao.com/link/map/$encodedName,$lat,$lng',
+    );
+    if (!await launchUrl(appUri, mode: LaunchMode.externalApplication)) {
+      await launchUrl(webUri, mode: LaunchMode.externalApplication);
     }
   }
 
@@ -209,6 +234,8 @@ class _DetailScreenState extends State<DetailScreen> {
     final strollerRental = room['stroller_rental'] == true;
     final hasKidsZone = room['has_kids_zone'] == true;
     final hasDisabledToilet = room['has_disabled_toilet'] == true;
+    final lat = (room['lat'] as num?)?.toDouble() ?? 0.0;
+    final lng = (room['lng'] as num?)?.toDouble() ?? 0.0;
 
     return Column(
       children: [
@@ -354,6 +381,28 @@ class _DetailScreenState extends State<DetailScreen> {
                     ),
                   ],
                 ),
+                const SizedBox(height: 8),
+                // 길안내 버튼
+                if (lat != 0.0 && lng != 0.0)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => _launchNaverMap(lat, lng, name),
+                          icon: const Icon(Icons.map_outlined, size: 18),
+                          label: const Text('네이버 지도'),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => _launchKakaoMap(lat, lng, name),
+                          icon: const Icon(Icons.map_outlined, size: 18),
+                          label: const Text('카카오맵'),
+                        ),
+                      ),
+                    ],
+                  ),
                 const SizedBox(height: 8),
                 SizedBox(
                   width: double.infinity,

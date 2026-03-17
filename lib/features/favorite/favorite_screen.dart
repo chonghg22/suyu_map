@@ -73,7 +73,7 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
                     itemBuilder: (context, i) {
                       final item = _favorites[i];
                       final nursingRoomId =
-                          item['nursing_room_id'] as String? ?? '';
+                          item['nursing_room_id']?.toString() ?? '';
                       final room = item['nursing_room'] as Map<String, dynamic>?;
                       final name = room?['name'] as String? ?? '이름 없음';
                       final address =
