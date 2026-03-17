@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/constants/supabase_constants.dart';
+import '../../data/repositories/favorite_repository.dart';
 
 class DetailScreen extends StatefulWidget {
   final String id;
@@ -13,9 +14,11 @@ class DetailScreen extends StatefulWidget {
 }
 
 class _DetailScreenState extends State<DetailScreen> {
+  final _favoriteRepo = FavoriteRepository();
   Map<String, dynamic>? _room;
   bool _isLoading = true;
   bool _isFavorite = false;
+  bool _isFavoriteLoading = false;
 
   @override
   void initState() {
@@ -27,24 +30,28 @@ class _DetailScreenState extends State<DetailScreen> {
     try {
       final client = Supabase.instance.client.schema(SupabaseConstants.schema);
 
-      // nursing_room 테이블 조회
-      final room = await client
-          .from(SupabaseConstants.nursingRoomTable)
-          .select()
-          .eq('id', widget.id)
-          .maybeSingle();
+      final results = await Future.wait([
+        client
+            .from(SupabaseConstants.nursingRoomTable)
+            .select()
+            .eq('id', widget.id)
+            .maybeSingle(),
+        client
+            .from(SupabaseConstants.nursingRoomRatingView)
+            .select()
+            .eq('nursing_room_id', widget.id)
+            .maybeSingle(),
+        _favoriteRepo.isFavorite(widget.id),
+      ]);
+
+      final room = results[0] as Map<String, dynamic>?;
+      final rating = results[1] as Map<String, dynamic>?;
+      final isFavorite = results[2] as bool;
 
       if (room == null) {
         if (mounted) setState(() => _isLoading = false);
         return;
       }
-
-      // nursing_room_rating 뷰 별도 조회 (nursing_room_id 기준)
-      final rating = await client
-          .from(SupabaseConstants.nursingRoomRatingView)
-          .select()
-          .eq('nursing_room_id', widget.id)
-          .maybeSingle();
 
       if (mounted) {
         setState(() {
@@ -56,12 +63,37 @@ class _DetailScreenState extends State<DetailScreen> {
             'avg_accessibility': rating?['avg_accessibility'],
             'review_count': rating?['review_count'],
           };
+          _isFavorite = isFavorite;
           _isLoading = false;
         });
       }
     } catch (e) {
       debugPrint('상세 정보 로드 실패: $e');
       if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _toggleFavorite() async {
+    setState(() => _isFavoriteLoading = true);
+    try {
+      if (_isFavorite) {
+        await _favoriteRepo.removeFavorite(widget.id);
+      } else {
+        await _favoriteRepo.addFavorite(widget.id);
+      }
+      setState(() => _isFavorite = !_isFavorite);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(_isFavorite ? '즐겨찾기에 추가했습니다.' : '즐겨찾기에서 제거했습니다.'),
+            duration: const Duration(seconds: 1),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('즐겨찾기 오류: $e');
+    } finally {
+      if (mounted) setState(() => _isFavoriteLoading = false);
     }
   }
 
@@ -108,8 +140,8 @@ class _DetailScreenState extends State<DetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(label,
-                    style: TextStyle(
-                        fontSize: 12, color: Colors.grey.shade500)),
+                    style:
+                        TextStyle(fontSize: 12, color: Colors.grey.shade500)),
                 const SizedBox(height: 2),
                 Text(value, style: const TextStyle(fontSize: 14)),
               ],
@@ -156,10 +188,7 @@ class _DetailScreenState extends State<DetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('수유실 상세'),
-        elevation: 0,
-      ),
+      appBar: AppBar(title: const Text('수유실 상세'), elevation: 0),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _room == null
@@ -223,7 +252,6 @@ class _DetailScreenState extends State<DetailScreen> {
                   ],
                 ),
 
-                // 층 정보
                 if (floorInfo.isNotEmpty) ...[
                   const SizedBox(height: 4),
                   Text(floorInfo,
@@ -231,18 +259,15 @@ class _DetailScreenState extends State<DetailScreen> {
                           fontSize: 14, color: Colors.grey.shade600)),
                 ],
 
-                // 평점
                 if (reviewCount > 0) ...[
                   const SizedBox(height: 10),
                   Row(
                     children: [
                       const Icon(Icons.star, size: 18, color: Colors.amber),
                       const SizedBox(width: 4),
-                      Text(
-                        avgTotal.toStringAsFixed(1),
-                        style: const TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
+                      Text(avgTotal.toStringAsFixed(1),
+                          style: const TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.bold)),
                       const SizedBox(width: 4),
                       Text('($reviewCount개 리뷰)',
                           style: TextStyle(
@@ -253,11 +278,10 @@ class _DetailScreenState extends State<DetailScreen> {
 
                 const Divider(height: 28),
 
-                // 주소
                 if (address.isNotEmpty)
-                  _buildInfoRow(Icons.location_on_outlined, '도로명 주소', address),
+                  _buildInfoRow(
+                      Icons.location_on_outlined, '도로명 주소', address),
 
-                // 운영시간
                 _buildInfoRow(
                   Icons.access_time,
                   '운영시간',
@@ -272,7 +296,6 @@ class _DetailScreenState extends State<DetailScreen> {
                         fontSize: 15, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 10),
 
-                // 편의시설 뱃지
                 Wrap(
                   children: [
                     _buildBadge('유모차 대여', strollerRental),
@@ -285,7 +308,7 @@ class _DetailScreenState extends State<DetailScreen> {
           ),
         ),
 
-        // 하단 버튼 영역
+        // 하단 버튼
         SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
@@ -294,33 +317,30 @@ class _DetailScreenState extends State<DetailScreen> {
               children: [
                 Row(
                   children: [
-                    // 즐겨찾기
                     Expanded(
                       child: OutlinedButton.icon(
-                        onPressed: () {
-                          setState(() => _isFavorite = !_isFavorite);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(_isFavorite
-                                  ? '즐겨찾기에 추가했습니다.'
-                                  : '즐겨찾기에서 제거했습니다.'),
-                              duration: const Duration(seconds: 1),
-                            ),
-                          );
-                        },
-                        icon: Icon(
-                          _isFavorite ? Icons.favorite : Icons.favorite_border,
-                          color: _isFavorite ? Colors.pink : null,
-                        ),
-                        label: Text(_isFavorite ? '즐겨찾기 제거' : '즐겨찾기 추가'),
+                        onPressed: _isFavoriteLoading ? null : _toggleFavorite,
+                        icon: _isFavoriteLoading
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                    strokeWidth: 2),
+                              )
+                            : Icon(
+                                _isFavorite
+                                    ? Icons.favorite
+                                    : Icons.favorite_border,
+                                color: _isFavorite ? Colors.pink : null,
+                              ),
+                        label:
+                            Text(_isFavorite ? '즐겨찾기 제거' : '즐겨찾기 추가'),
                       ),
                     ),
                     const SizedBox(width: 10),
-                    // 리뷰 작성
                     Expanded(
                       child: ElevatedButton.icon(
                         onPressed: () {
-                          // TODO: 리뷰 작성 화면으로 이동
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text('리뷰 작성 기능은 준비 중입니다.'),
@@ -335,12 +355,10 @@ class _DetailScreenState extends State<DetailScreen> {
                   ],
                 ),
                 const SizedBox(height: 8),
-                // 정보 수정 제안
                 SizedBox(
                   width: double.infinity,
                   child: TextButton.icon(
                     onPressed: () {
-                      // TODO: 신고/수정 제안 화면으로 이동
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('정보 수정 제안 기능은 준비 중입니다.'),

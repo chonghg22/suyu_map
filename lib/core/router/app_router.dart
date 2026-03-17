@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:suyu_map/features/detail/detail_screen.dart';
+import 'package:suyu_map/features/favorite/favorite_screen.dart';
 import 'package:suyu_map/features/map/map_screen.dart';
 
 final appRouter = GoRouter(
@@ -16,6 +17,11 @@ final appRouter = GoRouter(
       builder: (context, state) => DetailScreen(
         id: state.pathParameters['id']!,
       ),
+    ),
+    GoRoute(
+      path: '/favorites',
+      name: 'favorites',
+      builder: (context, state) => const FavoriteScreen(),
     ),
   ],
 );
