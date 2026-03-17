@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.chonghg22.suyu_map"
+    namespace = "kr.co.chonghg22.suyu_map"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -20,7 +20,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.chonghg22.suyu_map"
+        applicationId = "kr.co.chonghg22.suyu_map"
         minSdk = flutter.minSdkVersion // flutter_naver_map requires minSdk 21+
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

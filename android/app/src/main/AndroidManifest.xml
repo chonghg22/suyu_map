@@ -15,7 +15,7 @@
         <!-- 네이버 지도 Client ID -->
         <meta-data
             android:name="com.naver.maps.map.CLIENT_ID"
-            android:value="NAVER_MAP_CLIENT_ID" />
+            android:value="kd0xoybpq4" />
 
         <activity
             android:name=".MainActivity"
