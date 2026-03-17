@@ -30,7 +30,7 @@ class SuyuMapApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: '수유맵',
+      title: '맘마존',
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       routerConfig: appRouter,
