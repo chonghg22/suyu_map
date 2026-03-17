@@ -30,7 +30,7 @@ class _DetailScreenState extends State<DetailScreen> {
     try {
       final client = Supabase.instance.client.schema(SupabaseConstants.schema);
 
-      final results = await Future.wait([
+      final results = await Future.wait<dynamic>([
         client
             .from(SupabaseConstants.nursingRoomTable)
             .select()
