@@ -81,10 +81,20 @@ class _MapScreenState extends State<MapScreen> {
 
       final List<dynamic> rooms = response as List<dynamic>;
       for (final room in rooms) {
-        final roomLat = (room['latitude'] as num).toDouble();
-        final roomLng = (room['longitude'] as num).toDouble();
+        final roomLat = (room['latitude'] as num?)?.toDouble() ?? 0.0;
+        final roomLng = (room['longitude'] as num?)?.toDouble() ?? 0.0;
         final name = room['name'] as String? ?? '';
         final address = room['address'] as String? ?? '';
+
+        // null일 수 있는 추가 필드 안전 처리
+        // ignore: unused_local_variable
+        final avgTotal = (room['avg_total'] as num?)?.toDouble() ?? 0.0;
+        // ignore: unused_local_variable
+        final reviewCount = (room['review_count'] as num?)?.toInt() ?? 0;
+        // ignore: unused_local_variable
+        final distanceM = (room['distance_m'] as num?)?.toDouble() ?? 0.0;
+
+        if (roomLat == 0.0 && roomLng == 0.0) continue;
 
         final marker = NMarker(
           id: room['id'].toString(),
