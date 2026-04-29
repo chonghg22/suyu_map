@@ -15,7 +15,12 @@
         <!-- 네이버 지도 Client ID -->
         <meta-data
             android:name="com.naver.maps.map.CLIENT_ID"
-            android:value="NAVER_MAP_CLIENT_ID" />
+            android:value="${naverMapClientId}" />
+
+        <!-- AdMob App ID -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="${admobAppId}"/>
 
         <activity
             android:name=".MainActivity"

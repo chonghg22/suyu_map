@@ -1,23 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_naver_map/flutter_naver_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'core/constants/app_constants.dart';
 import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Initialize AdMob
+  await MobileAds.instance.initialize();
+
   // Initialize Supabase
   await Supabase.initialize(
-    url: 'SUPABASE_URL',
-    anonKey: 'SUPABASE_ANON_KEY',
+    url: supabaseUrl,
+    anonKey: supabaseAnonKey,
   );
 
   // Initialize Naver Map SDK
   await FlutterNaverMap().init(
-    clientId: 'NAVER_MAP_CLIENT_ID',
+    clientId: naverMapClientId,
     onAuthFailed: (ex) => debugPrint('네이버 지도 인증 실패: ${ex.message}'),
   );
 
